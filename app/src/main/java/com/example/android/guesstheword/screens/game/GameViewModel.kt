@@ -1,4 +1,4 @@
-package com.example.android.guesstheword
+package com.example.android.guesstheword.screens.game
 
 import android.os.CountDownTimer
 import androidx.lifecycle.LiveData
