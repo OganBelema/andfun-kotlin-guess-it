@@ -51,13 +51,7 @@ class GameFragment : Fragment() {
 
         gameViewModel = ViewModelProviders.of(this).get(GameViewModel::class.java)
 
-        binding.correctButton.setOnClickListener {
-            gameViewModel.onCorrect()
-        }
-
-        binding.skipButton.setOnClickListener {
-            gameViewModel.onSkip()
-        }
+        binding.gameViewModel = gameViewModel
 
         gameViewModel.score.observe(this, Observer {
             binding.scoreText.text = it.toString()
