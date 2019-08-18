@@ -21,6 +21,8 @@ class GameViewModel: ViewModel() {
         const val ONE_SECOND = 1000L
         // This is the total time of the game
         const val COUNTDOWN_TIME = 60000L
+
+        const val PANIC_SECONDS = 10L
     }
 
     // The current word
@@ -48,9 +50,13 @@ class GameViewModel: ViewModel() {
     private val currentTime: LiveData<Long>
         get() = _currentTime
 
-    val currentTimeString = Transformations.map(currentTime) { time ->
+    val currentTimeString: LiveData<String> = Transformations.map(currentTime) { time ->
         DateUtils.formatElapsedTime(time)
     }
+
+    private val _eventBuzz = MutableLiveData<BuzzType>()
+    val eventBuzz: LiveData<BuzzType>
+        get() = _eventBuzz
 
     init {
         Timber.d("GameViewModel created")
@@ -62,11 +68,15 @@ class GameViewModel: ViewModel() {
         timer = object : CountDownTimer(COUNTDOWN_TIME, ONE_SECOND){
             override fun onFinish() {
                 _currentTime.value = DONE
+                _eventBuzz.value = BuzzType.GAME_OVER
                 _gameFinishedEvent.value = true
             }
 
             override fun onTick(millisUntilFinished: Long) {
                 _currentTime.value = millisUntilFinished / ONE_SECOND
+                if (millisUntilFinished / ONE_SECOND <= PANIC_SECONDS) {
+                    _eventBuzz.value = BuzzType.COUNTDOWN_PANIC
+                }
             }
 
         }
@@ -125,11 +135,16 @@ class GameViewModel: ViewModel() {
 
     fun onCorrect() {
         _score.value = score.value?.plus(1)
+        _eventBuzz.value = BuzzType.CORRECT
         nextWord()
     }
 
     fun onGameFinishComplete(){
         _gameFinishedEvent.value = false
+    }
+
+    fun onBuzzComplete() {
+        _eventBuzz.value = BuzzType.NO_BUZZ
     }
 
     override fun onCleared() {
